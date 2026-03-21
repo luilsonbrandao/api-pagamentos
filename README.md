@@ -35,3 +35,18 @@ A aplicação estará rodando na porta `8080`.
 * **Console do Banco H2:** http://localhost:8080/h2-console
     * *JDBC URL:* `jdbc:h2:mem:fadesp_db`
     * *User:* `sa` (sem senha)
+---
+
+## Estrutura do Banco de Dados (Tabela: `tb_pagamento`)
+
+Para manter a simplicidade solicitada no desafio, o domínio foi modelado em uma única tabela contendo os dados da transação e o status de processamento.
+
+| Coluna | Tipo (Java) | Tipo (SQL) | Restrição | Descrição |
+| :--- | :--- | :--- | :--- | :--- |
+| `id` | `Long` | `BIGINT` | `PRIMARY KEY` | Identificador único gerado automaticamente. |
+| `codigo_debito` | `Integer` | `INTEGER` | `NOT NULL` | Código identificador do débito. |
+| `cpf_cnpj_pagador` | `String` | `VARCHAR` | `NOT NULL` | Documento validado por Regex (11 ou 14 dígitos). |
+| `metodo_pagamento`| `Enum` | `VARCHAR` | `NOT NULL` | BOLETO, PIX, CARTAO_CREDITO ou CARTAO_DEBITO. |
+| `numero_cartao` | `String` | `VARCHAR` | `NULLABLE` | Obrigatório apenas para cartão (16 dígitos). |
+| `valor` | `BigDecimal`| `DECIMAL` | `NOT NULL` | Valor financeiro da transação. |
+| `status` | `Enum` | `VARCHAR` | `NOT NULL` | Estado atual processado pela máquina de estados. |
