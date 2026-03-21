@@ -6,6 +6,8 @@ import br.org.fadesp.desafio.pagamentos.domain.enums.MetodoPagamento;
 import br.org.fadesp.desafio.pagamentos.domain.entity.Pagamento;
 import br.org.fadesp.desafio.pagamentos.domain.enums.StatusPagamento;
 import br.org.fadesp.desafio.pagamentos.repository.PagamentoRepository;
+import br.org.fadesp.desafio.pagamentos.repository.PagamentoSpecification;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -83,7 +85,14 @@ public class PagamentoService {
     }
 
     public List<PagamentoResponseDTO> listarComFiltros(Integer codigoDebito, String cpfCnpj, StatusPagamento status) {
-        return repository.buscarComFiltros(codigoDebito, cpfCnpj, status)
+
+        Specification<Pagamento> spec = Specification.allOf(
+                PagamentoSpecification.comCodigoDebito(codigoDebito),
+                PagamentoSpecification.comCpfCnpj(cpfCnpj),
+                PagamentoSpecification.comStatus(status)
+        );
+
+        return repository.findAll(spec)
                 .stream()
                 .map(this::converterParaResponseDTO)
                 .toList();
