@@ -14,7 +14,7 @@ Este repositório contém a solução para o Desafio Técnico da FADESP. O objet
 
 ---
 
-## ⚙️ Como Executar a Aplicação
+## Como Executar a Aplicação
 
 Como o projeto utiliza o banco de dados H2 embutido, não é necessária nenhuma instalação externa.
 
@@ -50,3 +50,10 @@ Para manter a simplicidade solicitada no desafio, o domínio foi modelado em uma
 | `numero_cartao` | `String` | `VARCHAR` | `NULLABLE` | Obrigatório apenas para cartão (16 dígitos). |
 | `valor` | `BigDecimal`| `DECIMAL` | `NOT NULL` | Valor financeiro da transação. |
 | `status` | `Enum` | `VARCHAR` | `NOT NULL` | Estado atual processado pela máquina de estados. |
+
+---
+
+## Principais Decisões Técnicas
+
+* **Uso de DTOs (Data Transfer Objects) com `records`:** Em vez de expor a Entidade do banco de dados diretamente nos controllers, utilizei DTOs para garantir o desacoplamento entre a camada de apresentação e a de persistência, aproveitando a imutabilidade nativa dos records do Java.
+* **Validação de Inputs na Borda:** Utilização de Expressões Regulares (Regex) via `@Pattern` no DTO para garantir que CPFs/CNPJs e Números de Cartão tenham o tamanho e os caracteres corretos antes mesmo de chegarem à camada de Serviço, evitando processamento desnecessário e chamadas inúteis ao banco de dados.
