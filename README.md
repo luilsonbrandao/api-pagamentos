@@ -57,3 +57,20 @@ Para manter a simplicidade solicitada no desafio, o domínio foi modelado em uma
 
 * **Uso de DTOs (Data Transfer Objects) com `records`:** Em vez de expor a Entidade do banco de dados diretamente nos controllers, utilizei DTOs para garantir o desacoplamento entre a camada de apresentação e a de persistência, aproveitando a imutabilidade nativa dos records do Java.
 * **Validação de Inputs na Borda:** Utilização de Expressões Regulares (Regex) via `@Pattern` no DTO para garantir que CPFs/CNPJs e Números de Cartão tenham o tamanho e os caracteres corretos antes mesmo de chegarem à camada de Serviço, evitando processamento desnecessário e chamadas inúteis ao banco de dados.
+
+---
+
+## End-points da API
+
+Abaixo estão os principais recursos expostos. A documentação completa com os payloads (JSON) está disponível no Swagger (`/swagger-ui.html`).
+
+| Método | Rota | Descrição |
+| :--- | :--- | :--- |
+| `POST` | `/api/pagamentos` | Recebe e registra um novo pagamento. |
+| `PATCH` | `/api/pagamentos/{id}/status` | Atualiza o status seguindo a máquina de estados. |
+| `GET` | `/api/pagamentos` | Lista pagamentos (aceita filtros opcionais via Query Params). |
+| `DELETE` | `/api/pagamentos/{id}` | Realiza a exclusão lógica (inativação) do registro. |
+
+---
+
+> Desenvolvido por Luilson Brandão para o Desafio Técnico FADESP.
