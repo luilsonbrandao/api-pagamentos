@@ -1,5 +1,6 @@
 package br.org.fadesp.desafio.pagamentos.service;
 
+import br.org.fadesp.desafio.pagamentos.dto.PagamentoMapper;
 import br.org.fadesp.desafio.pagamentos.dto.PagamentoRequestDTO;
 import br.org.fadesp.desafio.pagamentos.dto.PagamentoResponseDTO;
 import br.org.fadesp.desafio.pagamentos.domain.enums.MetodoPagamento;
@@ -17,9 +18,11 @@ import java.util.List;
 public class PagamentoService {
 
     private final PagamentoRepository repository;
+    private final PagamentoMapper mapper;
 
-    public PagamentoService(PagamentoRepository repository) {
+    public PagamentoService(PagamentoRepository repository, PagamentoMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     @Transactional
@@ -44,14 +47,13 @@ public class PagamentoService {
         pagamento.setStatus(StatusPagamento.PENDENTE_DE_PROCESSAMENTO);
 
         Pagamento pagamentoSalvo = repository.save(pagamento);
-        return converterParaResponseDTO(pagamentoSalvo);
+        return mapper.toResponseDTO(pagamentoSalvo);
     }
 
     @Transactional
     public PagamentoResponseDTO atualizarStatus(Long id, StatusPagamento novoStatus) {
         Pagamento pagamento = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pagamento não encontrado."));
-
 
         // Máquina de Estados
         if (!pagamento.getStatus().podeAlterarPara(novoStatus)) {
@@ -61,7 +63,7 @@ public class PagamentoService {
         pagamento.setStatus(novoStatus);
         pagamento = repository.save(pagamento);
 
-        return converterParaResponseDTO(pagamento);
+        return mapper.toResponseDTO(pagamento);
     }
 
     @Transactional
@@ -88,19 +90,8 @@ public class PagamentoService {
 
         return repository.findAll(spec)
                 .stream()
-                .map(this::converterParaResponseDTO)
+                .map(mapper::toResponseDTO)
                 .toList();
     }
 
-    private PagamentoResponseDTO converterParaResponseDTO(Pagamento pagamento) {
-        return new PagamentoResponseDTO(
-                pagamento.getId(),
-                pagamento.getCodigoDebito(),
-                pagamento.getCpfCnpjPagador(),
-                pagamento.getMetodoPagamento(),
-                pagamento.getNumeroCartao(),
-                pagamento.getValor(),
-                pagamento.getStatus()
-        );
-    }
 }

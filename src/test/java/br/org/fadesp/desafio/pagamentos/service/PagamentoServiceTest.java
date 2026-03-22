@@ -3,6 +3,7 @@ package br.org.fadesp.desafio.pagamentos.service;
 import br.org.fadesp.desafio.pagamentos.domain.entity.Pagamento;
 import br.org.fadesp.desafio.pagamentos.domain.enums.MetodoPagamento;
 import br.org.fadesp.desafio.pagamentos.domain.enums.StatusPagamento;
+import br.org.fadesp.desafio.pagamentos.dto.PagamentoMapper;
 import br.org.fadesp.desafio.pagamentos.dto.PagamentoRequestDTO;
 import br.org.fadesp.desafio.pagamentos.dto.PagamentoResponseDTO;
 import br.org.fadesp.desafio.pagamentos.repository.PagamentoRepository;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -25,6 +27,9 @@ class PagamentoServiceTest {
 
     @Mock
     private PagamentoRepository repository;
+
+    @Spy
+    private PagamentoMapper mapper = new PagamentoMapper();
 
     @InjectMocks
     private PagamentoService service;

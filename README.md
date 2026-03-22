@@ -48,6 +48,7 @@ Para garantir um código limpo (*Clean Code*), testável e de fácil manutençã
 4. **Atomicidade com `@Transactional`:** Operações de escrita no banco de dados são protegidas por transações para garantir que não haja inconsistência de dados em caso de falhas sistêmicas no meio do processo.
 5. **DTOs com Records e Validação na Borda:** Utilização de `records` nativos do Java 14+ para garantir imutabilidade na transferência de dados. O uso de Regex (`@Pattern`) na borda da aplicação evita que CPFs/CNPJs ou cartões inválidos cheguem à camada de serviço.
 6. **Cobertura de Testes Unitários:** A camada principal de regras de negócio (`PagamentoService`) está coberta por testes unitários utilizando JUnit 5 e Mockito (padrão AAA - *Arrange, Act, Assert*), garantindo a resiliência da máquina de estados.
+7. **Separação de Responsabilidades (SRP) com Mappers:** A conversão entre a Entidade de domínio e os DTOs de resposta foi isolada em um componente dedicado (`PagamentoMapper`). Isso previne que a camada de Serviço fique com múltiplas responsabilidades.
 
 ---
 
