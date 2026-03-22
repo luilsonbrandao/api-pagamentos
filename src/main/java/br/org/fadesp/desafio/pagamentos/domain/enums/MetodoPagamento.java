@@ -4,5 +4,9 @@ public enum MetodoPagamento {
     BOLETO,
     PIX,
     CARTAO_CREDITO,
-    CARTAO_DEBITO
+    CARTAO_DEBITO;
+
+    public boolean requerCartao() {
+        return this == CARTAO_CREDITO || this == CARTAO_DEBITO;
+    }
 }

@@ -9,6 +9,7 @@ import br.org.fadesp.desafio.pagamentos.repository.PagamentoRepository;
 import br.org.fadesp.desafio.pagamentos.repository.PagamentoSpecification;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -21,12 +22,13 @@ public class PagamentoService {
         this.repository = repository;
     }
 
+    @Transactional
     public PagamentoResponseDTO receberPagamento(PagamentoRequestDTO dto) {
-        if (isPagamentoComCartao(dto.metodoPagamento()) &&
+        if (dto.metodoPagamento().requerCartao() &&
                 (dto.numeroCartao() == null || dto.numeroCartao().isBlank())) {
             throw new IllegalArgumentException("O número do cartão é obrigatório para pagamentos em crédito ou débito.");
         }
-        if (!isPagamentoComCartao(dto.metodoPagamento()) &&
+        if (!dto.metodoPagamento().requerCartao() &&
                 (dto.numeroCartao() != null && !dto.numeroCartao().isBlank())) {
             throw new IllegalArgumentException("O número do cartão não deve ser informado para pagamentos via PIX ou Boleto.");
         }
@@ -45,24 +47,15 @@ public class PagamentoService {
         return converterParaResponseDTO(pagamentoSalvo);
     }
 
+    @Transactional
     public PagamentoResponseDTO atualizarStatus(Long id, StatusPagamento novoStatus) {
         Pagamento pagamento = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pagamento não encontrado."));
 
-        StatusPagamento statusAtual = pagamento.getStatus();
 
         // Máquina de Estados
-        if (statusAtual == StatusPagamento.PROCESSADO_COM_SUCESSO) {
-            throw new IllegalArgumentException("Pagamentos processados com sucesso não podem ter o status alterado.");
-        }
-
-        if (statusAtual == StatusPagamento.PROCESSADO_COM_FALHA && novoStatus != StatusPagamento.PENDENTE_DE_PROCESSAMENTO) {
-            throw new IllegalArgumentException("Pagamentos com falha só podem retornar para Pendente de Processamento.");
-        }
-
-        if (statusAtual == StatusPagamento.PENDENTE_DE_PROCESSAMENTO &&
-                (novoStatus != StatusPagamento.PROCESSADO_COM_SUCESSO && novoStatus != StatusPagamento.PROCESSADO_COM_FALHA)) {
-            throw new IllegalArgumentException("Um pagamento pendente só pode ser alterado para Sucesso ou Falha.");
+        if (!pagamento.getStatus().podeAlterarPara(novoStatus)) {
+            throw new IllegalArgumentException("Transição de status de " + pagamento.getStatus() + " para " + novoStatus + " não é permitida.");
         }
 
         pagamento.setStatus(novoStatus);
@@ -71,6 +64,7 @@ public class PagamentoService {
         return converterParaResponseDTO(pagamento);
     }
 
+    @Transactional
     public void inativar(Long id) {
         Pagamento pagamento = repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Pagamento não encontrado."));
@@ -96,10 +90,6 @@ public class PagamentoService {
                 .stream()
                 .map(this::converterParaResponseDTO)
                 .toList();
-    }
-
-    private boolean isPagamentoComCartao(MetodoPagamento metodo) {
-        return metodo == MetodoPagamento.CARTAO_CREDITO || metodo == MetodoPagamento.CARTAO_DEBITO;
     }
 
     private PagamentoResponseDTO converterParaResponseDTO(Pagamento pagamento) {
