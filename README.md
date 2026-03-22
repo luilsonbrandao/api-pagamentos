@@ -5,12 +5,13 @@ Este repositório contém a solução para o Desafio Técnico da FADESP. O objet
 ## Tecnologias e Dependências
 
 * **Java 17:** Linguagem de programação.
-* **Spring Boot (3.5.12):** Framework principal da aplicação.
+* **Spring Boot (3.5.12):** Framework base da aplicação.
 * **Spring Data JPA & Hibernate:** Mapeamento objeto-relacional (ORM) e persistência.
 * **H2 Database:** Banco de dados relacional em memória.
-* **Jakarta Validation:** Validação de integridade dos dados de entrada (Regex para CPF/CNPJ e Cartões).
+* **Jakarta Validation:** Validação de integridade dos dados de entrada.
 * **Springdoc OpenAPI (Swagger):** Documentação viva e interface gráfica para testes da API.
-* **Lombok:** Redução de código boilerplate (Getters, Setters, Construtores).
+* **JUnit 5 & Mockito:** Suíte de testes unitários para a camada de negócios.
+* **Lombok:** Redução de código boilerplate.
 
 ---
 
@@ -21,7 +22,7 @@ Como o projeto utiliza o banco de dados H2 embutido, não é necessária nenhuma
 **Passo 1. Clone o repositório:**
 
 ```bash
-git clone [https://github.com/luilsonbrandao/api-pagamentos.git](https://github.com/luilsonbrandao/api-pagamentos.git)
+git clone https://github.com/luilsonbrandao/api-pagamentos.git
 ```
 **Passo 2. Importe na sua IDE** (IntelliJ, Eclipse, VS Code) como um projeto Maven.
 
@@ -35,6 +36,19 @@ A aplicação estará rodando na porta `8080`.
 * **Console do Banco H2:** http://localhost:8080/h2-console
     * *JDBC URL:* `jdbc:h2:mem:fadesp_db`
     * *User:* `sa` (sem senha)
+---
+
+## Principais Decisões Técnicas e Arquitetura
+
+Para garantir um código limpo (*Clean Code*), testável e de fácil manutenção, as seguintes abordagens foram aplicadas:
+
+1. **Rich Domain Model (DDD nos Enums):** A inteligência da máquina de estados e as regras de obrigatoriedade de cartão foram encapsuladas dentro dos próprios Enums (`StatusPagamento` e `MetodoPagamento`). Isso evita que a camada de Serviço fique inflada com múltiplos `ifs`, centralizando a regra de negócio no domínio.
+2. **Consultas Dinâmicas com JPA Specifications:** Em vez de utilizar consultas JPQL estáticas complexas, a busca de pagamentos foi implementada utilizando o padrão *Specification*. Isso permite a combinação dinâmica de filtros (Código do Débito, CPF/CNPJ e Status) de forma altamente escalável.
+3. **Tratamento de Exceções Global (`@RestControllerAdvice`):** Captura centralizada de regras de negócio (`IllegalArgumentException`), falhas de validação (`MethodArgumentNotValidException`) e erros de parse do Jackson. Isso garante que a API sempre retorne um JSON amigável e padronizado, sem vazar *stacktraces* do servidor.
+4. **Atomicidade com `@Transactional`:** Operações de escrita no banco de dados são protegidas por transações para garantir que não haja inconsistência de dados em caso de falhas sistêmicas no meio do processo.
+5. **DTOs com Records e Validação na Borda:** Utilização de `records` nativos do Java 14+ para garantir imutabilidade na transferência de dados. O uso de Regex (`@Pattern`) na borda da aplicação evita que CPFs/CNPJs ou cartões inválidos cheguem à camada de serviço.
+6. **Cobertura de Testes Unitários:** A camada principal de regras de negócio (`PagamentoService`) está coberta por testes unitários utilizando JUnit 5 e Mockito (padrão AAA - *Arrange, Act, Assert*), garantindo a resiliência da máquina de estados.
+
 ---
 
 ## Estrutura do Banco de Dados (Tabela: `tb_pagamento`)
@@ -53,16 +67,9 @@ Para manter a simplicidade solicitada no desafio, o domínio foi modelado em uma
 
 ---
 
-## Principais Decisões Técnicas
-
-* **Uso de DTOs (Data Transfer Objects) com `records`:** Em vez de expor a Entidade do banco de dados diretamente nos controllers, utilizei DTOs para garantir o desacoplamento entre a camada de apresentação e a de persistência, aproveitando a imutabilidade nativa dos records do Java.
-* **Validação de Inputs na Borda:** Utilização de Expressões Regulares (Regex) via `@Pattern` no DTO para garantir que CPFs/CNPJs e Números de Cartão tenham o tamanho e os caracteres corretos antes mesmo de chegarem à camada de Serviço, evitando processamento desnecessário e chamadas inúteis ao banco de dados.
-
----
-
 ## End-points da API
 
-Abaixo estão os principais recursos expostos. A documentação completa com os payloads (JSON) está disponível no Swagger (`/swagger-ui.html`).
+Abaixo estão os principais recursos expostos. A documentação completa com os payloads (JSON) está disponível no Swagger.
 
 | Método | Rota | Descrição |
 | :--- | :--- | :--- |
@@ -70,7 +77,5 @@ Abaixo estão os principais recursos expostos. A documentação completa com os 
 | `PATCH` | `/api/pagamentos/{id}/status` | Atualiza o status seguindo a máquina de estados. |
 | `GET` | `/api/pagamentos` | Lista pagamentos (aceita filtros opcionais via Query Params). |
 | `DELETE` | `/api/pagamentos/{id}` | Realiza a exclusão lógica (inativação) do registro. |
-
----
 
 > Desenvolvido por Luilson Brandão para o Desafio Técnico FADESP.
