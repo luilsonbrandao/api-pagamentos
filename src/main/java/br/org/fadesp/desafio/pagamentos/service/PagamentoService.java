@@ -36,12 +36,7 @@ public class PagamentoService {
             throw new IllegalArgumentException("O número do cartão não deve ser informado para pagamentos via PIX ou Boleto.");
         }
 
-        Pagamento pagamento = new Pagamento();
-        pagamento.setCodigoDebito(dto.codigoDebito());
-        pagamento.setCpfCnpjPagador(dto.cpfCnpjPagador());
-        pagamento.setMetodoPagamento(dto.metodoPagamento());
-        pagamento.setNumeroCartao(dto.numeroCartao());
-        pagamento.setValor(dto.valor());
+        Pagamento pagamento = mapper.toEntity(dto);
 
         // Todo pagamento nasce como Pendente
         pagamento.setStatus(StatusPagamento.PENDENTE_DE_PROCESSAMENTO);
@@ -88,10 +83,9 @@ public class PagamentoService {
                 PagamentoSpecification.comStatus(status)
         );
 
-        return repository.findAll(spec)
-                .stream()
-                .map(mapper::toResponseDTO)
-                .toList();
+        List<Pagamento> pagamentosEncontrados = repository.findAll(spec);
+
+        return mapper.toResponseDTOList(pagamentosEncontrados);
     }
 
 }
